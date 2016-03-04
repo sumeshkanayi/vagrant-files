@@ -1,0 +1,46 @@
+minion_array=[{"name"=>"minion1","ip"=>"10.0.0.41"},{"name"=>"minion2","ip"=>"10.0.0.42"}]
+
+Vagrant.configure("2") do |config|
+  
+
+ 
+
+ minion_array.each{|minion|
+
+
+#Modified here please check
+
+  config.vm.define "#{minion["name"]}" do |instance|
+  puts "hostname instance  #{minion["name"]}"
+  
+  instance.vm.box = "einyx/trusty64-salt2015.5.2"
+  instance.vm.hostname="#{minion["name"]}"
+  instance.vm.network "private_network", ip: "#{minion["ip"]}"
+  instance.vm.box_check_update = false
+  instance.vm.provision "shell", inline: <<-SHELL
+     echo "10.0.0.40  master" >> "/etc/hosts"
+     echo "10.0.0.41  minion1" >> "/etc/hosts"
+     echo "10.0.0.42  minion2" >> "/etc/hosts"
+        SHELL
+ end
+
+
+ }
+
+ config.vm.define "master" do |master|
+  
+  master.vm.box = "ncatelli/saltmaster"
+  master.vm.hostname="master"
+  master.vm.network "private_network", ip: "10.0.0.40"
+  master.vm.box_check_update = false
+  master.vm.provision "shell", inline: <<-SHELL
+     echo "10.0.0.40  master" >> "/etc/hosts"
+     echo "10.0.0.41  minion1" >> "/etc/hosts"
+     echo "10.0.0.42  minion2" >> "/etc/hosts"
+        SHELL
+ end
+
+
+
+
+end
